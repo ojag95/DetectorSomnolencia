@@ -6,7 +6,10 @@ from argparse import ArgumentParser, SUPPRESS
 import cv2
 import time
 import logging as log
-from openvino.inference_engine import IENetwork, IEPlugin
+try:
+    from armv7l.openvino.inference_engine import IENetwork, IEPlugin
+except:
+    from openvino.inference_engine import IENetwork, IEPlugin
 
 #Argumentos
 def build_argparser():
