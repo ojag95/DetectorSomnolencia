@@ -6,8 +6,8 @@ from scipy.spatial import distance as dist
 from imutils.video import VideoStream
 from imutils import face_utils
 from threading import Thread
+from playsound import playsound
 import numpy as np
-import playsound
 import argparse
 import imutils
 import time
@@ -28,6 +28,8 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 print("[INFO] starting video stream thread...")
 vs = VideoStream(0).start()
 time.sleep(1.0)
+frameCount=0
+inicio_de_tiempo=None
 while True:
 	# grab the frame from the threaded video file stream, resize
 	# it, and convert it to grayscale
@@ -56,6 +58,7 @@ while True:
 		aperturaBoca=0
 		anchoBoca=0
 		distanciaNariz=0
+		alarma = False
 
 		posicionesX=[]
 		posicionesY=[]
@@ -125,14 +128,38 @@ while True:
 		#Alerta ojos
 		if(aperturaOjoDerecho<=(anchoOjoDerecho*0.2)):
 			print('Alerta ojo derecho')
+			print('Conteo de cuadros '+str(frameCount))
+			if inicio_de_tiempo is None:
+				inicio_de_tiempo = time.time()
+			if not alarma:
+				alarma = True
+
+				# check to see if an alarm file was supplied,
+				# and if so, start a thread to have the alarm
+				# sound played in the background
+				tiempo_final = time.time() 
+				tiempo_transcurrido = tiempo_final - inicio_de_tiempo
+				print('Tiempo dormido '+str(tiempo_transcurrido))
+				if (tiempo_transcurrido>=1):
+					t = Thread(target=reproducirAlarma,args=())
+					t.deamon = True
+					t.start()
+		else:
+			ALARM_ON = False
+			inicio_de_tiempo=None
+
 		#Alerta ojos
 		if(aperturaOjoIzquierdo<=(anchoOjoIzquierdo*0.2)):
 			print('Alerta ojo izquierdo')
 		
 	cv2.imshow("Frame", frame)
-	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
+	#frameCount+1
  
 	# if the `q` key was pressed, break from the loop
 	if key == ord("q"):
 		break
+	def reproducirAlarma():
+	# play an alarm sound
+		playsound('alarm.wav')
+		
